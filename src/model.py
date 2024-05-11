@@ -15,14 +15,46 @@ load_dotenv()
 class Inference:
     def __init__(self, params: dict):
         self.params = params
-    def load_tokenizer(self):
+    def load_tokenizer(self) -> None:
+        """
+        Loads the tokenizer for the model.
+
+        This function initializes the tokenizer for the model specified by the "model_id" parameter in the "params" dictionary.
+        The tokenizer is loaded using the "AutoTokenizer.from_pretrained" method from the Hugging Face Transformers library.
+        The loaded tokenizer is then assigned to the "tokenizer" attribute of the current object.
+
+        Returns:
+            None
+        """
         model_id = self.params["model_id"]
         self.tokenizer = AutoTokenizer.from_pretrained(
             model_id,
             cache_dir=os.environ.get("HF_CACHE"),
             )
 
-    def load_model(self): 
+    def load_model(self) -> None:
+        """
+        Loads the model for the inference pipeline.
+
+        This function initializes the model for the inference pipeline based on the provided model ID. 
+        The model is loaded using the `AutoModelForCausalLM.from_pretrained` method from the Hugging Face Transformers library. 
+        The model is loaded with the following parameters:
+        
+        - `model_id` (str): The ID of the pretrained model to load.
+        - `cache_dir` (str, optional): The directory to cache the pretrained model. Defaults to the value of the `HF_CACHE` environment variable.
+        - `load_in_4bit` (bool, optional): Whether to load the model in 4-bit quantization. Defaults to `True`.
+        - `device_map` (str or dict, optional): The device map specifying the devices to use for computation. Defaults to `"auto"`.
+        - `torch_dtype` (torch.dtype, optional): The data type to use for computation. Defaults to `torch.bfloat16`.
+        - `token` (str, optional): The token to use for authentication. Defaults to the value of the `HF_TOKEN` environment variable.
+        
+        The loaded model is then assigned to the `model` attribute of the current object.
+
+        Parameters:
+            self (Inference): The current instance of the Inference class.
+        
+        Returns:
+            None
+        """
         model_id = self.params["model_id"]
         self.model = AutoModelForCausalLM.from_pretrained(
             model_id,
@@ -33,7 +65,13 @@ class Inference:
             token=os.environ.get("HF_TOKEN")
             )
         
-    def streaming(self):
+    def streaming(self) -> TextIteratorStreamer:
+        """
+        Create a TextIteratorStreamer object with specific attributes.
+
+        Returns:
+            TextIteratorStreamer: The TextIteratorStreamer object created.
+        """
         streamer = TextIteratorStreamer(
             self.tokenizer, 
             skip_prompt=True, 
@@ -41,7 +79,16 @@ class Inference:
         )
         return streamer
     
-    def huggingface_pipeline(self, streaming=False):
+    def huggingface_pipeline(self, streaming: bool = False) -> CustomHuggingFacePipeline:
+        """
+        Generates a Hugging Face pipeline for text generation.
+
+        Args:
+            streaming (bool, optional): Determines whether to use streaming for text generation. Defaults to False.
+
+        Returns:
+            CustomHuggingFacePipeline: A custom Hugging Face pipeline object for text generation.
+        """
         if streaming: 
             streamer = self.streaming()
             pipe = pipeline("text-generation", 
@@ -66,7 +113,13 @@ class Inference:
         return llm
 
 
-    def prompt_template(self):
+    def prompt_template(self) -> PromptTemplate:
+        """
+        Generate a PromptTemplate object based on a provided template.
+
+        Returns:
+            PromptTemplate: An instance of the PromptTemplate class.
+        """
         template = """Question: {question}"""
         prompt = PromptTemplate.from_template(template)
         return prompt
