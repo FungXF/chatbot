@@ -31,7 +31,7 @@ class Query(BaseModel):
     query_str: str
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None, None]:
+async def lifespan(app: FastAPI) -> AsyncGenerator:
     """
     A context manager that manages the lifespan of an app by setting up configuration,
     initializing the Inference object, loading tokenizer and model, creating a prompt, and yielding control.
